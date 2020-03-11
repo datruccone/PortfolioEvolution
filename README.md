@@ -9,9 +9,13 @@
 * How is my Degiro's portfolio information loaded into this script?:
 
 Login to your Degiro account as usual.
+
 Go to Portfolio -> Export (Is on the upper right corner)
+
 Select the date that you want to export.
+
 Right click in CSV and select "Copy Link Address".
+
 Run the R script. Important: you must be logged in or the script won't be able to download the CSV file
 
 
