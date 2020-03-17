@@ -106,7 +106,10 @@ plot_startdate <- Sys.Date() - last_x_days
 print(ggplot(Portfolio_Evolution, aes(Date)) + 
         theme_dark() +
         theme(plot.background = element_rect(fill = "#BFD5E3"))+
-        geom_line(aes(y = Portfolio_Evolution$HPR, colour = "Portfolio"),size=1.5) + 
+        ggtitle("Daily Changes")+
+        labs(y="Change (%)")+
+        labs(colour = "Portfolios and Indexes") +
+        geom_line(aes(y = Portfolio_Evolution$HPR, colour = "0_My Portfolio"),size=1.5) + 
         geom_line(aes(y = Portfolio_Evolution$WORLD_Dev, colour = "WORLD_Dev"),size=0.4) + 
         geom_line(aes(y = Portfolio_Evolution$SP500, colour = "SP500"),size=0.4) + 
         geom_line(aes(y = Portfolio_Evolution$STOXX50, colour = "STOXX50"),size=0.4) +
