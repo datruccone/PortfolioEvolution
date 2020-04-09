@@ -7,6 +7,7 @@ library(dplyr)
 library(BatchGetSymbols)
 library("ggplot2")
 library(grDevices)
+library(hrbrthemes) #Themes for ggplot2
 
 #Variables names are snake_case underscore and Data Frame names are snake_case with first letters in capital
 #Data Frames Summary:
@@ -16,7 +17,9 @@ library(grDevices)
 #Cashflow: keeps records of deposits and withdrawals from/to your Investment account/s. Each movement must be added manually to this data frame
 
 
-setwd('c:/Path/to/your/wd')
+setwd('c:/Path/to/your/folder')
+#load("Portfolio Evolution.RData")  #Optional 
+
 cat("\f")  
 
 #IMPORT Degiro PORTFOLIO CSV
@@ -76,12 +79,18 @@ l.out <- BatchGetSymbols(tickers = c('WLD.PA','IUES.AS','^STOXX50E','XQUI.MI','T
 
 #Filtering and cleaning Markets data:
 Indexes <- l.out$df.tickers
-WORLD_Dev <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "WLD.PA"))      #MSCI World Index ETF in EUR (because the Portfolio is EUR, so I'm matching same currencies)
-SP500 <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "IUES.AS"))         #SP500 ETF in EUR (because the Portfolio is EUR, so I'm matching same currencies)
-STOXX50 <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "^STOXX50E"))     #STOXX50 Index
-Xtrackers <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "XQUI.MI"))     #The Portfolio index tracks a globally diversified portfolio consisting of equities and bond indices. The tactical allocation may change up to 8 times per year. Equity share: minimum 30%, maximum 70%. Bond share: minimum 30%, maximum 70%.
-VanEck_Off <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "TOF.AS"))     #The aim of the VanEck Vectors™ Multi-Asset Growth Allocation UCITS ETF is to follow the Multi-Asset Growth Allocation Index as closely as possible. This is a composite index made up in the ratios indicated here: - 60% Solactive Global Equity Index - 10% GPR Global 100 Index - 15% Markit iBoxx EUR Liquid Corporates Index - 15% Markit iBoxx EUR Liquid Sovereign Diversified 1-10 Index
-ComStage_Off <- data.frame(subset(l.out$df.tickers[7:9],l.out$df.tickers$ticker == "F703.DE"))  #The ComStage Vermögensstrategie Offensiv index tracks a diversified ETF portfolio. The initial allocation is made up of the following asset classes: 80% of global equities spread across geographies and across sectors, 10% of bonds and 10% commodities. Annually, the index is rebalanced.
+WORLD_Dev <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "WLD.PA"))      #MSCI World Index ETF in EUR (because the Portfolio is EUR, so I'm matching same currencies)
+WORLD_Dev[,3] <- ((WORLD_Dev$price.adjusted/shift(WORLD_Dev$price.adjusted))-1) 
+SP500 <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "IUES.AS"))         #SP500 ETF in EUR (because the Portfolio is EUR, so I'm matching same currencies)
+SP500[,3] <- ((SP500$price.adjusted/shift(SP500$price.adjusted))-1) 
+STOXX50 <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "^STOXX50E"))     #STOXX50 Index
+STOXX50[,3] <- ((STOXX50$price.adjusted/shift(STOXX50$price.adjusted))-1) 
+Xtrackers <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "XQUI.MI"))     #The Portfolio index tracks a globally diversified portfolio consisting of equities and bond indices. The tactical allocation may change up to 8 times per year. Equity share: minimum 30%, maximum 70%. Bond share: minimum 30%, maximum 70%.
+Xtrackers[,3] <- ((Xtrackers$price.adjusted/shift(Xtrackers$price.adjusted))-1) 
+VanEck_Off <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "TOF.AS"))     #The aim of the VanEck Vectors™ Multi-Asset Growth Allocation UCITS ETF is to follow the Multi-Asset Growth Allocation Index as closely as possible. This is a composite index made up in the ratios indicated here: - 60% Solactive Global Equity Index - 10% GPR Global 100 Index - 15% Markit iBoxx EUR Liquid Corporates Index - 15% Markit iBoxx EUR Liquid Sovereign Diversified 1-10 Index
+VanEck_Off[,3] <- ((VanEck_Off$price.adjusted/shift(VanEck_Off$price.adjusted))-1) 
+ComStage_Off <- data.frame(subset(l.out$df.tickers[c(7,8,6)],l.out$df.tickers$ticker == "F703.DE"))  #The ComStage Vermögensstrategie Offensiv index tracks a diversified ETF portfolio. The initial allocation is made up of the following asset classes: 80% of global equities spread across geographies and across sectors, 10% of bonds and 10% commodities. Annually, the index is rebalanced.
+ComStage_Off[,3] <- ((ComStage_Off$price.adjusted/shift(ComStage_Off$price.adjusted))-1) 
 
 names(WORLD_Dev)[1:3] <- c("Date","Ticker","WORLD_Dev")
 names(SP500)[1:3] <- c("Date","Ticker","SP500")
@@ -101,14 +110,10 @@ Portfolio_Evolution <- Portfolio_Evolution[!chron::is.weekend(as.Date(Portfolio_
 names(Portfolio_Evolution)[8:13] <- c("WORLD_Dev","SP500","STOXX50","Xtrackers","VanEck_Off","ComStage_Off")
 
 #Plotting:
-last_x_days <- 15 #Since how many days ago I'm going plot evolution graph
+last_x_days <- 7 #Since how many days ago I'm going plot evolution graph
 plot_startdate <- Sys.Date() - last_x_days
-print(ggplot(Portfolio_Evolution, aes(Date)) + 
-        theme_dark() +
-        theme(plot.background = element_rect(fill = "#BFD5E3"))+
-        ggtitle("Daily Changes")+
-        labs(y="Change (%)")+
-        labs(colour = "Portfolios and Indexes") +
+
+print(ggplot(Portfolio_Evolution,aes(Date)) +
         geom_line(aes(y = Portfolio_Evolution$HPR, colour = "0_My Portfolio"),size=1.5) + 
         geom_line(aes(y = Portfolio_Evolution$WORLD_Dev, colour = "WORLD_Dev"),size=0.4) + 
         geom_line(aes(y = Portfolio_Evolution$SP500, colour = "SP500"),size=0.4) + 
@@ -116,9 +121,13 @@ print(ggplot(Portfolio_Evolution, aes(Date)) +
         geom_line(aes(y = Portfolio_Evolution$Xtrackers, colour = "Xtrackers"),size=0.4) + 
         geom_line(aes(y = Portfolio_Evolution$VanEck_Off, colour = "VanEck_Off"),size=0.4) +
         geom_line(aes(y = Portfolio_Evolution$ComStage_Off, colour = "ComStage_Off"),size=0.4) +    
-        #  xlim(as.Date(c(plot_startdate, plot_enddate), format="%d/%m/%Y")) +
-        ylim(-2.5,2.5)+
-        scale_x_date(date_labels="%e/%m",date_breaks  ="1 day",limits = c(plot_startdate, NA)))
+        theme_ft_rc(plot_title_size = 14,axis_title_face = "bold",axis_title_just = "m",axis_title_size = 10)+
+        ggtitle("Daily Changes")+
+        labs(y="Change (%)")+
+        labs(colour = "Portfolios and Indexes") +
+        xlim(as.Date(c(plot_startdate, Sys.Date()), format="%d/%m/%Y")) 
+      #  ylim(-5,5)
+)
 
 #Preparing Portfolio vs Benchmarks evolution report to present on the Console:
 Days <- list(7,14,30,45,90,180,365) #Different time frames to show on the report
@@ -199,6 +208,6 @@ cat (paste0("Evolution during last n days: "))
 print.data.frame(Portfolio_vs_Benchmarks,quote=FALSE,row.names = FALSE)
 #view(Portfolio_vs_Benchmarks,"Evolution")
 
-save.image()
+save.image("Portfolio Evolution.RData")
 
 packrat::clean()
