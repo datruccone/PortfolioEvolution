@@ -34,3 +34,16 @@ TOF.AS: The aim of the VanEck Vectors™ Multi-Asset Growth Allocation UCITS ETF
 F703.DE: The ComStage Vermögensstrategie Offensiv index tracks a diversified ETF portfolio. The initial allocation is made up of the following asset classes: 80% of global equities spread across geographies and across sectors, 10% of bonds and 10% commodities. Annually, the index is rebalanced.\
 
 * More info here: https://www.reddit.com/r/ETFs_Europe/comments/fgx5mx/a_portfolio_tracker_and_benchmark_for_degiro/
+
+Screenshots:
+
+
+![](Benchmark.jpg)\
+Evolution and Benchmarking of your Portfolio
+
+![](Portfolio_Evolution.jpg)\
+Daily changes
+
+![](plot.jpg)\
+Plot
+
