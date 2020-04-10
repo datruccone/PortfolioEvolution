@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1586526459091.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3088677737",
+    "id" : "D48702B2",
+    "lastKnownWriteTime" : 1586457814,
+    "last_content_update" : 1586457814,
+    "path" : "~/GitHub/PortfolioEvolution/R/Portfolio Evolution.R",
+    "project_path" : "R/Portfolio Evolution.R",
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
