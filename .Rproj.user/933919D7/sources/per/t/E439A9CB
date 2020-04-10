@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1586537141204.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3197144324",
+    "id" : "E439A9CB",
+    "lastKnownWriteTime" : 1586537179,
+    "last_content_update" : 1586537179017,
+    "path" : "~/GitHub/PortfolioEvolution/PortfolioEvolution_Public.R",
+    "project_path" : "PortfolioEvolution_Public.R",
+    "properties" : {
+        "cursorPosition" : "231,32",
+        "scrollLine" : "192"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

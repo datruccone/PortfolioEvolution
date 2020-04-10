@@ -17,19 +17,43 @@ library(hrbrthemes) #Themes for ggplot2
 #Cashflow: keeps records of deposits and withdrawals from/to your Investment account/s. Each movement must be added manually to this data frame
 
 
-setwd('c:/Path/to/your/folder')
-#load("Portfolio Evolution.RData")  #Optional 
+setwd('c:/Path/to/your/Workspace/')
+load("Portfolio Evolution.RData")
+
+commarep <- function(c) {sub(",",".",c)}
+'%!in%' <- function(x,y)!('%in%'(x,y))
 
 cat("\f")  
 
 #IMPORT Degiro PORTFOLIO CSV
 #Copy the link to Degiro CSV Portfolio Export and run the script. IMPORTANT: you must be logged in Degiro.
 
+# For batch import of several days:
+
+#degiro_csv_link <- readline(prompt="Paste Degiro's CSV link: ")  
+#degiro_csv_fromDate <- readline(prompt="Enter From Date in YYYY-MM-DD Format: ") 
+#degiro_csv_toDate <- readline(prompt="Enter To Date in YYYY-MM-DD Format: ") 
+#days = as.integer(as.Date(degiro_csv_toDate) - as.Date(degiro_csv_fromDate))+1
+#Portfolio_Daily <- data.frame(Date = as.character(), Product = as.character(), ISIN = as.character(), Amount = as.numeric(), Closing = as.numeric(), Localvalue = as.character(), ValueinEUR = as.character())
+#degiro_csv_date <- degiro_csv_fromDate
+#for (i in 1:days){ 
+#  degiro_csv_link <- paste0(substr(degiro_csv_link,1, nchar(degiro_csv_link)-14),substr(degiro_csv_date,9, 10),"%2F",substr(degiro_csv_date,6, 7),"%2F",substr(degiro_csv_date,1, 4))
+#  CSV_Degiro <- fread(degiro_csv_link)
+#  CSV_Degiro$Date <- degiro_csv_date
+#  CSV_Degiro <- CSV_Degiro[,c(7,1:6)]
+#  #Append to Portfolio Daily history
+#  Portfolio_Daily <- rbind(Portfolio_Daily,CSV_Degiro,use.names=FALSE)
+#  degiro_csv_date <- as.character(as.Date(degiro_csv_date) %m+% days(1))
+#  #Delete CSV Data Frame
+#  rm(CSV_Degiro)
+#}
+#END BATCH IMPORT
+###################
+
+# One Day import:
 degiro_csv_link <- readClipboard()
 degiro_csv_toDate <- as.integer(gregexpr("toDate" ,degiro_csv_link))
 degiro_csv_date <- as.Date(paste0(substr(degiro_csv_link,degiro_csv_toDate + 17, degiro_csv_toDate + 21),"-",substr(degiro_csv_link,degiro_csv_toDate + 12, degiro_csv_toDate + 13),"-",substr(degiro_csv_link,degiro_csv_toDate + 7, degiro_csv_toDate + 8)))
-
-'%!in%' <- function(x,y)!('%in%'(x,y))
 
 #Check if Degiro CSV's hasn't been already imported to our Portfolio Daily dataframe...
 if (degiro_csv_date %!in% Portfolio_Daily$Date) 
@@ -46,14 +70,11 @@ if (degiro_csv_date %!in% Portfolio_Daily$Date)
   write.xlsx2 (Portfolio_Daily, "Portfolio_Daily.xlsx", sheetName = "Degiro",col.names = TRUE, row.names = FALSE, append = FALSE)
   #Delete CSV Data Frame
   rm(CSV_Degiro)
-  #END IMPORT
 }
+#END ONE DAY IMPORT
 
-#Workarround: For some unknown reason if I don't reload the Portfolio Daily DF from Excel file the following aggregate doesn't work.
-Portfolio_Daily <- data.frame(read.xlsx('Portfolio_Daily.xlsx',sheetName = "Degiro"))
-Portfolio_Daily$Date <- as.Date(Portfolio_Daily$Date)
 #Add imported day Portfolio value to Portfolio Evolution 
-Portfolio_Evolution <- data.frame(aggregate(Portfolio_Daily[7],list(Portfolio_Daily$Date),sum))
+Portfolio_Evolution <- data.frame(aggregate(as.numeric(commarep(Portfolio_Daily$ValueinEUR)),list(Portfolio_Daily$Date),sum,na.rm=TRUE))
 names(Portfolio_Evolution)[1:2] <- c("Date","Portfolio")
 Portfolio_Evolution$Date <- as.Date(Portfolio_Evolution$Date)
 Portfolio_Evolution$HPR <- 0 #Add Holding Return Period column, which is basically the Portfolio gains/losses minus deposits and withdrawals
@@ -71,11 +92,11 @@ Portfolio_Evolution$Earnings_Acc_Perc <- round((Portfolio_Evolution$Earnings_Acc
 
 #Indexes Import, this piece of code is based on: https://cran.r-project.org/web/packages/BatchGetSymbols/vignettes/BatchGetSymbols-vignette.html
 l.out <- BatchGetSymbols(tickers = c('WLD.PA','IUES.AS','^STOXX50E','XQUI.MI','TOF.AS','F703.DE'), 
-                         first.date = '2018-7-24',   #You can use another date
-                         last.date = Sys.Date(), 
-                         freq.data = 'daily',
-                         cache.folder = file.path(tempdir(), 
-                                                  'BGS_Cache') ) # cache in tempdir()
+                           first.date = '2018-7-24',   #You can use another date
+                           last.date = Sys.Date(), 
+                           freq.data = 'daily',
+                           cache.folder = file.path(tempdir(), 
+                                                    'BGS_Cache') ) # cache in tempdir()
 
 #Filtering and cleaning Markets data:
 Indexes <- l.out$df.tickers
@@ -110,24 +131,24 @@ Portfolio_Evolution <- Portfolio_Evolution[!chron::is.weekend(as.Date(Portfolio_
 names(Portfolio_Evolution)[8:13] <- c("WORLD_Dev","SP500","STOXX50","Xtrackers","VanEck_Off","ComStage_Off")
 
 #Plotting:
-last_x_days <- 7 #Since how many days ago I'm going plot evolution graph
+last_x_days <- 14 #Since how many days ago I'm going plot evolution graph
 plot_startdate <- Sys.Date() - last_x_days
 
 print(ggplot(Portfolio_Evolution,aes(Date)) +
-        geom_line(aes(y = Portfolio_Evolution$HPR, colour = "0_My Portfolio"),size=1.5) + 
-        geom_line(aes(y = Portfolio_Evolution$WORLD_Dev, colour = "WORLD_Dev"),size=0.4) + 
-        geom_line(aes(y = Portfolio_Evolution$SP500, colour = "SP500"),size=0.4) + 
-        geom_line(aes(y = Portfolio_Evolution$STOXX50, colour = "STOXX50"),size=0.4) +
-        geom_line(aes(y = Portfolio_Evolution$Xtrackers, colour = "Xtrackers"),size=0.4) + 
-        geom_line(aes(y = Portfolio_Evolution$VanEck_Off, colour = "VanEck_Off"),size=0.4) +
-        geom_line(aes(y = Portfolio_Evolution$ComStage_Off, colour = "ComStage_Off"),size=0.4) +    
-        theme_ft_rc(plot_title_size = 14,axis_title_face = "bold",axis_title_just = "m",axis_title_size = 10)+
-        ggtitle("Daily Changes")+
-        labs(y="Change (%)")+
-        labs(colour = "Portfolios and Indexes") +
-        xlim(as.Date(c(plot_startdate, Sys.Date()), format="%d/%m/%Y")) 
-      #  ylim(-5,5)
-)
+  geom_line(aes(y = Portfolio_Evolution$HPR, colour = "0_My Portfolio"),size=1.5) + 
+  geom_line(aes(y = Portfolio_Evolution$WORLD_Dev, colour = "WORLD_Dev"),size=0.4) + 
+  geom_line(aes(y = Portfolio_Evolution$SP500, colour = "SP500"),size=0.4) + 
+  geom_line(aes(y = Portfolio_Evolution$STOXX50, colour = "STOXX50"),size=0.4) +
+  geom_line(aes(y = Portfolio_Evolution$Xtrackers, colour = "Xtrackers"),size=0.4) + 
+  geom_line(aes(y = Portfolio_Evolution$VanEck_Off, colour = "VanEck_Off"),size=0.4) +
+  geom_line(aes(y = Portfolio_Evolution$ComStage_Off, colour = "ComStage_Off"),size=0.4) +    
+  theme_ft_rc(plot_title_size = 14,axis_title_face = "bold",axis_title_just = "m",axis_title_size = 10)+
+  ggtitle("Daily Changes")+
+  labs(y="Change (%)")+
+  labs(colour = "Portfolios and Indexes") +
+  xlim(as.Date(c(plot_startdate, Sys.Date()), format="%d/%m/%Y")) 
+#  ylim(-5,5)
+    )
 
 #Preparing Portfolio vs Benchmarks evolution report to present on the Console:
 Days <- list(7,14,30,45,90,180,365) #Different time frames to show on the report
@@ -172,7 +193,7 @@ Portfolio_vs_Benchmarks <- Portfolio_vs_Benchmarks[-nrow(Portfolio_vs_Benchmarks
 
 #More time frames:
 for (i in Days){
-  #i = 7
+#i = 7
   Portfolio_vs_Benchmarks_Temp <- subset(Portfolio_Evolution[c(1,3,8:13)],Date>=Sys.Date()-i)
   names(Portfolio_vs_Benchmarks_Temp)[2] <- "Portfolio"
   Portfolio_vs_Benchmarks_Temp <- data.frame(t(colSums(Portfolio_vs_Benchmarks_Temp[,-1],na.rm = TRUE)))
