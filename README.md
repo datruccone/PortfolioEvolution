@@ -47,3 +47,5 @@ Daily changes
 ![](plot.jpg)\
 Plot
 
+![](Cumul_Changes.jpeg)\
+Cumulative Changes
