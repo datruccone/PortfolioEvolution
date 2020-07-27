@@ -1,3 +1,12 @@
+# PortfolioEvolution V.3
+
+Now Login and download process from Degiro is fully automated, fill your data into the script.
+This script uses Rselenium. I'm not responsible for whatever that library is doing.
+Because your are sending sensitive information I recommend you to double check and understand what the script is doing before using it without supervision.
+
+I'M NOT RESPONSIBLE FOR ANY WRONG DOING BY THIS SCRIPT WITH YOUR ACCOUNT.
+
+
 # PortfolioEvolution V.2
 
 * R Script that:
